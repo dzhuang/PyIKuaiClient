@@ -5,9 +5,9 @@ from urllib.parse import urljoin
 
 import requests
 
-from .constants import (JSON_RESPONSE_ERRMSG, JSON_RESPONSE_RESULT,
-                        json_result_code)
-from .exceptions import AuthenticationError, RequestError
+from .constants import (JSON_RESPONSE_ERRMSG, JSON_RESPONSE_ERRMSG_SUCCESS,
+                        JSON_RESPONSE_RESULT, json_result_code)
+from .exceptions import AuthenticationError, RequestError, RouterAPIError
 
 
 class IKuai:  # noqa
@@ -52,7 +52,7 @@ class IKuai:  # noqa
                 f"{content[JSON_RESPONSE_RESULT]}: {content[JSON_RESPONSE_ERRMSG]}."
             )
 
-    def exec(self, func, action, param):
+    def exec(self, func, action, param, ensure_success=True):
         payload = {
             "func_name": func,
             "action": action,
@@ -62,7 +62,18 @@ class IKuai:  # noqa
             urljoin(self.base_url, "/Action/call"), json=payload)
         if response.status_code == 200:
             try:
-                return response.json()
+                content = response.json()
+                if not ensure_success:
+                    return content
+
+                if content[JSON_RESPONSE_ERRMSG] == JSON_RESPONSE_ERRMSG_SUCCESS:
+                    return content
+                else:
+                    raise RouterAPIError(
+                        f"API result error: '{content[JSON_RESPONSE_ERRMSG]}': "
+                        f"{repr(content)}"
+                    )
+
             except json.JSONDecodeError:
                 raise RequestError(
                     f"Error parsing response: {response.content.decode()}")
