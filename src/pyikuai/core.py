@@ -8,8 +8,8 @@ import requests
 from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         JSON_RESPONSE_ERRMSG_SUCCESS, JSON_RESPONSE_RESULT,
                         QueryRPParam, acl_l7_param, acl_l7_param_action,
-                        json_result_code, mac_group_param, rp_action,
-                        rp_func_name, rp_key)
+                        domain_blacklist_param, json_result_code,
+                        mac_group_param, rp_action, rp_func_name, rp_key)
 from .exceptions import AuthenticationError, RequestError, RouterAPIError
 
 
@@ -54,9 +54,9 @@ class IKuai:  # noqa
                 f"{content[JSON_RESPONSE_RESULT]}: {content[JSON_RESPONSE_ERRMSG]}."
             )
 
-    def exec(self, func, action, param, ensure_success=True):
+    def exec(self, func_name, action, param, ensure_success=True):
         payload = {
-            rp_key.func_name: func,
+            rp_key.func_name: func_name,
             rp_key.action: action,
             rp_key.param: param
         }
@@ -75,7 +75,7 @@ class IKuai:  # noqa
                 else:
                     if content[JSON_RESPONSE_ERRMSG] == "no login authentication":
                         self._session = None
-                        return self.exec(func, action, param, ensure_success)
+                        return self.exec(func_name, action, param, ensure_success)
                     raise RouterAPIError(
                         f"API result error: '{content[JSON_RESPONSE_ERRMSG]}': "
                         f"{repr(content)}"
@@ -98,7 +98,7 @@ class IKuai:  # noqa
     def add_mac_group(self, group_name, addr_pools, comments=None):
         comments = comments or []
         return self.exec(
-            func=rp_func_name.macgroup,
+            func_name=rp_func_name.macgroup,
             action=rp_action.add,
             param={
                 mac_group_param.newRow: True,
@@ -110,7 +110,7 @@ class IKuai:  # noqa
 
     def get_mac_groups(self):
         result = self.exec(
-            func=rp_func_name.macgroup,
+            func_name=rp_func_name.macgroup,
             action=rp_action.show,
             param=QueryRPParam().as_dict()
         )
@@ -119,7 +119,7 @@ class IKuai:  # noqa
     def edit_mac_group(self, group_id, group_name, addr_pools, comments=None):
         comments = comments or []
         return self.exec(
-            func=rp_func_name.macgroup,
+            func_name=rp_func_name.macgroup,
             action=rp_action.edit,
             param={
                 mac_group_param.id: group_id,
@@ -131,7 +131,7 @@ class IKuai:  # noqa
 
     def del_mac_group(self, group_id):
         return self.exec(
-            func=rp_func_name.macgroup,
+            func_name=rp_func_name.macgroup,
             action=rp_action.delete,
             param={
                 mac_group_param.id: group_id,
@@ -180,14 +180,14 @@ class IKuai:  # noqa
             app_protos, enabled, time, week)
 
         return self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.add,
             param=param
         )
 
     def get_acl_l7(self):
         result = self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.show,
             param=QueryRPParam().as_dict()
         )
@@ -203,14 +203,14 @@ class IKuai:  # noqa
         param[acl_l7_param.id] = acl_l7_id
 
         return self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.edit,
             param=param
         )
 
     def del_acl_l7(self, acl_l7_id):
         return self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.delete,
             param={
                 acl_l7_param.id: acl_l7_id,
@@ -219,7 +219,7 @@ class IKuai:  # noqa
 
     def disable_acl_l7(self, acl_l7_id):
         return self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.down,
             param={
                 acl_l7_param.id: acl_l7_id,
@@ -228,7 +228,7 @@ class IKuai:  # noqa
 
     def enable_acl_l7(self, acl_l7_id):
         return self.exec(
-            func=rp_func_name.acl_l7,
+            func_name=rp_func_name.acl_l7,
             action=rp_action.up,
             param={
                 acl_l7_param.id: acl_l7_id,
@@ -236,3 +236,110 @@ class IKuai:  # noqa
         )
 
     # }}}
+
+    # {{{ domain_blacklist CRUD
+    # 行为管控 之 禁止娱乐网站
+
+    def _get_domain_blacklist_param(
+            self, enabled=True,
+            ipaddrs: list | None = None,
+            domain_groups=None, time="00:00-23:59",
+            comment=None,
+            weekdays="1234567"):
+
+        domain_groups = domain_groups or []
+        enabled = "yes" if enabled else "no"
+        comment = comment or []
+        comment = comment.replace(" ", quote(" "))
+
+        ipaddrs = ipaddrs or []
+        ipaddr = ",".join(ipaddrs)
+
+        param = {
+            domain_blacklist_param.comment: comment,
+            domain_blacklist_param.domain_group: ",".join(domain_groups),
+            domain_blacklist_param.enabled: enabled,
+            domain_blacklist_param.ipaddr: ipaddr,
+            domain_blacklist_param.time: time,
+            domain_blacklist_param.weekdays: weekdays
+        }
+        return param
+
+    def get_domain_blacklist(self):
+        result = self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.show,
+            param=QueryRPParam().as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
+    def add_domain_blacklist(
+            self, enabled=True,
+            ipaddrs: list | None = None,
+            domain_groups=None, time="00:00-23:59",
+            comment=None,
+            weekdays="1234567"):
+
+        param = self._get_domain_blacklist_param(
+            enabled=enabled,
+            ipaddrs=ipaddrs,
+            domain_groups=domain_groups,
+            time=time,
+            comment=comment,
+            weekdays=weekdays)
+
+        return self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.add,
+            param=param
+        )
+
+    def edit_domain_blacklist(
+            self, domain_blacklist_id, enabled=True,
+            ipaddrs: list | None = None,
+            domain_groups=None, time="00:00-23:59",
+            comment=None,
+            weekdays="1234567"):
+
+        param = self._get_domain_blacklist_param(
+            enabled=enabled,
+            ipaddrs=ipaddrs,
+            domain_groups=domain_groups,
+            time=time,
+            comment=comment,
+            weekdays=weekdays)
+
+        param[domain_blacklist_param.id] = domain_blacklist_id
+
+        return self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.edit,
+            param=param
+        )
+
+    def del_domain_blacklist(self, domain_blacklist_id):
+        return self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.delete,
+            param={
+                domain_blacklist_param.id: domain_blacklist_id,
+            }
+        )
+
+    def disable_domain_blacklist(self, domain_blacklist_id):
+        return self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.down,
+            param={
+                domain_blacklist_param.id: domain_blacklist_id,
+            }
+        )
+
+    def enable_domain_blacklist(self, domain_blacklist_id):
+        return self.exec(
+            func_name=rp_func_name.domain_blacklist,
+            action=rp_action.up,
+            param={
+                domain_blacklist_param.id: domain_blacklist_id,
+            }
+        )

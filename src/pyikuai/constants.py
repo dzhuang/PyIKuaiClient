@@ -28,6 +28,7 @@ class rp_action:  # noqa
 class rp_func_name:  # noqa
     macgroup = "macgroup"
     acl_l7 = "acl_l7"
+    domain_blacklist = "domain_blacklist"
 
 
 class QueryRPParam:
@@ -63,12 +64,12 @@ class mac_group_param:  # noqa
 
 
 class acl_l7_param:  # noqa
+    id = "id"
     action = "action"
     app_proto = "app_proto"
     comment = "comment"
     dst_addr = "dst_addr"
     enabled = "enabled"
-    id = "id"
     prio = "prio"
     src_addr = "src_addr"
     time = "time"
@@ -78,3 +79,13 @@ class acl_l7_param:  # noqa
 class acl_l7_param_action:  # noqa
     drop = "drop"
     accept = "accept"
+
+
+class domain_blacklist_param:  # noqa
+    id = "id"
+    comment = "comment"
+    domain_group = "domain_group"
+    enabled = "enabled"
+    ipaddr = "ipaddr"
+    time = "time"
+    weekdays = "weekdays"
