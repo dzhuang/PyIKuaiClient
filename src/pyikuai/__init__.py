@@ -1,5 +1,5 @@
 __version__ = '0.1.0'
 
-from .core import IKuai
+from .core import IKuaiClient
 
-__all__ = ["IKuai"]
+__all__ = ["IKuaiClient"]

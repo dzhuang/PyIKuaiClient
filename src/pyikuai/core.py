@@ -59,7 +59,7 @@ class QueryRPParam:
         }
 
 
-class IKuai:  # noqa
+class IKuaiClient:  # noqa
     def __init__(self, url, username, password):
         self._username = username
         self._passwd = password
