@@ -606,6 +606,14 @@ class IKuaiClient:  # noqa
     # {{{ mac_qos CRUD
     # 流控分流 之 MAC限速
 
+    def list_mac_qos(self, **query_kwargs):
+        result = self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
     def _get_mac_qos_param(
             self,
             mac_addrs,

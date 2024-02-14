@@ -127,3 +127,7 @@ The access control of device via mac address. The implemented methods include: `
 ### mac_comment
 
 The management of alias of devices, mapping mac addresses. The implemented methods include: `add_mac_comment`, `list_mac_comment`, `edit_mac_comment`, `del_mac_comment`.
+
+### mac_qos
+
+The interface for limiting download/upload speed of devices, mapping mac addresses. The implemented methods include: `add_mac_qos`, `list_mac_qos`, `edit_mac_qos`, `del_mac_qos`, `enable_mac_qos`, `disable_mac_qos`.
