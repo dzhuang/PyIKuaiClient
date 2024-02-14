@@ -26,10 +26,12 @@ class rp_action:  # noqa
 
 
 class rp_func_name:  # noqa
+    sysstat = "sysstat"
     macgroup = "macgroup"
     acl_l7 = "acl_l7"
     domain_blacklist = "domain_blacklist"
     monitor_lanip = "monitor_lanip"
+    monitor_lanipv6 = "monitor_lanipv6"
 
 
 class rp_order_param:  # noqa

@@ -98,6 +98,16 @@ class IKuai:  # noqa
                 f"{content[JSON_RESPONSE_RESULT]}: {content[JSON_RESPONSE_ERRMSG]}."
             )
 
+    def get_protocols_json(self):
+        response = self.session.get(
+            urljoin(self.base_url, "json/protocols_cn.json"), headers={
+                "Content-Type": 'application/json'
+            })
+        if response.status_code == 200:
+            return response.json()
+        raise RequestError(
+            f"Request failed with response status code: {response.status_code}")
+
     def exec(self, func_name, action, param, ensure_success=True):
         payload = {
             rp_key.func_name: func_name,
@@ -387,3 +397,25 @@ class IKuai:  # noqa
                 domain_blacklist_param.id: domain_blacklist_id,
             }
         )
+
+    # }}}
+
+    def get_sysstat(self, param_types=None):
+        param_types = param_types or "verinfo,cpu,memory,stream,cputemp".split(",")
+        result = self.exec(
+            func_name=rp_func_name.sysstat,
+            action=rp_action.show,
+            param={"TYPE": ",".join(param_types)}
+        )
+        return result[JSON_RESPONSE_DATA]
+
+    def get_monitor_lanip(self, ip_type="v4", **query_kwargs):
+        assert ip_type in ["v4", "v6"], "ip_type must be 'v4' or 'v6'"
+
+        result = self.exec(
+            func_name=(rp_func_name.monitor_lanip if ip_type == "v4"
+                       else rp_func_name.monitor_lanipv6),
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
