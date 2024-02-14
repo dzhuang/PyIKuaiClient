@@ -27,7 +27,7 @@ ikuai_client = IKuaiClient(
 
 ```python
 
->>> ikuai_client.get_mac_groups()  # get the mac_groups configured
+>>> ikuai_client.list_mac_groups()  # get the mac_groups configured
 {'total': 2,
  'data': [{'id': 1,
    'comment': '',
@@ -58,14 +58,14 @@ ikuai_client = IKuaiClient(
 
 The functionality related to behavioral control of devices connected, via protocol. 
 The implemented methods include
-`add_acl_l7`, `get_acl_l7`, `edit_acl_l7`, `del_acl_l7`, `disable_acl_l7`, `enable_acl_l7`.
+`add_acl_l7`, `list_acl_l7`, `edit_acl_l7`, `del_acl_l7`, `disable_acl_l7`, `enable_acl_l7`.
 
 
 ### domain_blacklist
 
 The functionality related to behavioral control of devices connected, via domain blacklist.
 The implemented methods include
-`add_domain_blacklist`, `get_domain_blacklist`, `edit_domain_blacklist`, `del_domain_blacklist`,
+`add_domain_blacklist`, `list_domain_blacklist`, `edit_domain_blacklist`, `del_domain_blacklist`,
 `disable_domain_blacklist`, `enable_domain_blacklist`
 
 
@@ -117,5 +117,13 @@ Get the system statistics.
 
 ### monitor_lanip & monitor_lanipv6
 
-Get the monitor list of lanip (v4) or lanipv6. For v4, use ``ikuai_client.get_monitor_lanip()``. For v6, use ``ikuai_client.get_monitor_lanip(ip_type='v6')`` .
+Get the monitor list of lanip (v4) or lanipv6. For v4, use ``ikuai_client.list_monitor_lanip()``. For v6, use ``ikuai_client.list_monitor_lanip(ip_type='v6')`` .
 
+
+### acl_mac
+
+The access control of device via mac address. The implemented methods include: `add_acl_mac`, `list_acl_mac`, `edit_acl_mac`, `del_acl_mac`, `enable_acl_mac`, `disable_acl_mac`.
+
+### mac_comment
+
+The management of alias of devices, mapping mac addresses. The implemented methods include: `add_mac_comment`, `list_mac_comment`, `edit_mac_comment`, `del_mac_comment`.

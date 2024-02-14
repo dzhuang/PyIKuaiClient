@@ -27,11 +27,16 @@ class rp_action:  # noqa
 
 class rp_func_name:  # noqa
     sysstat = "sysstat"
+
     macgroup = "macgroup"
-    acl_l7 = "acl_l7"
+    mac_comment = "mac_comment"
+
     domain_blacklist = "domain_blacklist"
     monitor_lanip = "monitor_lanip"
     monitor_lanipv6 = "monitor_lanipv6"
+
+    acl_l7 = "acl_l7"
+    acl_mac = "acl_mac"
 
 
 class rp_order_param:  # noqa
@@ -73,3 +78,18 @@ class domain_blacklist_param:  # noqa
     ipaddr = "ipaddr"
     time = "time"
     weekdays = "weekdays"
+
+
+class mac_comment_param:  # noqa
+    id = "id"
+    mac = "mac"
+    comment = "comment"
+
+
+class acl_mac_param:  # noqa
+    id = "id"
+    comment = "comment"
+    enabled = "enabled"
+    mac = "mac"
+    time = "time"
+    week = "week"
