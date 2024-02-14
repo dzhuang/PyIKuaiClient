@@ -8,10 +8,10 @@ import requests
 
 from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         JSON_RESPONSE_ERRMSG_SUCCESS, JSON_RESPONSE_RESULT,
-                        acl_l7_param, acl_l7_param_action,
+                        acl_l7_param, acl_l7_param_action, acl_mac_param,
                         domain_blacklist_param, json_result_code,
-                        mac_group_param, rp_action, rp_func_name, rp_key,
-                        rp_order_param)
+                        mac_comment_param, mac_group_param, rp_action,
+                        rp_func_name, rp_key, rp_order_param)
 from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
                          ValidationError)
 
@@ -100,7 +100,7 @@ class IKuaiClient:  # noqa
                 f"{content[JSON_RESPONSE_RESULT]}: {content[JSON_RESPONSE_ERRMSG]}."
             )
 
-    def get_protocols_json(self):
+    def list_protocols_json(self):
         response = self.session.get(
             urljoin(self.base_url, "json/protocols_cn.json"), headers={
                 "Content-Type": 'application/json'
@@ -188,7 +188,7 @@ class IKuaiClient:  # noqa
             }
         )
 
-    def get_mac_groups(self, **query_kwargs):
+    def list_mac_groups(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.macgroup,
             action=rp_action.show,
@@ -268,7 +268,7 @@ class IKuaiClient:  # noqa
             param=param
         )
 
-    def get_acl_l7(self, **query_kwargs):
+    def list_acl_l7(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.acl_l7,
             action=rp_action.show,
@@ -350,7 +350,7 @@ class IKuaiClient:  # noqa
         }
         return param
 
-    def get_domain_blacklist(self, **query_kwargs):
+    def list_domain_blacklist(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.domain_blacklist,
             action=rp_action.show,
@@ -440,7 +440,7 @@ class IKuaiClient:  # noqa
         )
         return result[JSON_RESPONSE_DATA]
 
-    def get_monitor_lanip(self, ip_type="v4", **query_kwargs):
+    def list_monitor_lanip(self, ip_type="v4", **query_kwargs):
         assert ip_type in ["v4", "v6"], "ip_type must be 'v4' or 'v6'"
 
         result = self.exec(
@@ -450,3 +450,155 @@ class IKuaiClient:  # noqa
             param=QueryRPParam(**query_kwargs).as_dict()
         )
         return result[JSON_RESPONSE_DATA]
+
+    # {{{ mac_comment CRUD
+    # 行为管控 之 终端名称管理
+
+    def list_mac_comment(self, **query_kwargs):
+        # mac comment will override device ip info comment
+        result = self.exec(
+            func_name=rp_func_name.mac_comment,
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
+    def del_mac_comment(self, mac_comment_id):
+        return self.exec(
+            func_name=rp_func_name.mac_comment,
+            action=rp_action.delete,
+            param={
+                mac_comment_param.id: mac_comment_id,
+            }
+        )
+
+    def add_mac_comment(self, mac, comment):
+        return self.exec(
+            func_name=rp_func_name.mac_comment,
+            action=rp_action.add,
+            param={
+                mac_comment_param.mac: mac,
+                mac_comment_param.comment: comment
+            }
+        )
+
+    def edit_mac_comment(self, mac_comment_id, mac, comment):
+        return self.exec(
+            func_name=rp_func_name.mac_comment,
+            action=rp_action.edit,
+            param={
+                mac_comment_param.id: mac_comment_id,
+                mac_comment_param.mac: mac,
+                mac_comment_param.comment: comment
+            }
+        )
+
+    # }}}
+
+    # {{{ acl_mac CRUD
+    # 行为管控 之 MAC访问控制
+
+    def _get_acl_mac_param(
+            self,
+            mac,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567"):
+
+        self.validate_time_range(time)
+
+        enabled = "yes" if enabled else "no"
+        comment = comment or ""
+        comment = comment.replace(" ", quote(" "))
+
+        param = {
+            acl_mac_param.mac: mac,
+            acl_mac_param.comment: comment,
+            acl_mac_param.enabled: enabled,
+            acl_mac_param.time: time,
+            acl_mac_param.week: week
+        }
+        return param
+
+    def list_acl_mac(self, **query_kwargs):
+        result = self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
+    def add_acl_mac(
+            self,
+            mac,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567"):
+
+        param = self._get_acl_mac_param(
+            mac=mac,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week)
+
+        return self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.add,
+            param=param
+        )
+
+    def edit_acl_mac(
+            self,
+            acl_mac_id,
+            mac,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567"):
+
+        param = self._get_acl_mac_param(
+            mac=mac,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week)
+
+        param[acl_mac_param.id] = acl_mac_id
+
+        return self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.edit,
+            param=param
+        )
+
+    def del_acl_mac(self, acl_mac_id):
+        return self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.delete,
+            param={
+                acl_mac_param.id: acl_mac_id,
+            }
+        )
+
+    def disable_acl_mac(self, acl_mac_id):
+        return self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.down,
+            param={
+                acl_mac_param.id: acl_mac_id,
+            }
+        )
+
+    def enable_acl_mac(self, acl_mac_id):
+        return self.exec(
+            func_name=rp_func_name.acl_mac,
+            action=rp_action.up,
+            param={
+                acl_mac_param.id: acl_mac_id,
+            }
+        )
+
+    # }}}
