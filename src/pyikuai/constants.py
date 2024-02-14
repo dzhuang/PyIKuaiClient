@@ -29,6 +29,12 @@ class rp_func_name:  # noqa
     macgroup = "macgroup"
     acl_l7 = "acl_l7"
     domain_blacklist = "domain_blacklist"
+    monitor_lanip = "monitor_lanip"
+
+
+class rp_order_param:  # noqa
+    asc = "asc"
+    desc = "desc"
 
 
 class QueryRPParam:
@@ -41,9 +47,28 @@ class QueryRPParam:
         :param order_by: string
         :param order_param: string
         """
-        self.param_type = param_type or ["data", "total"]
+
+        if param_type is not None:
+            assert isinstance(param_type, list), "param_type must be a list"
+        self.param_type = param_type or ["total", "data"]
+
+        if limit is not None:
+            assert isinstance(limit, list), "limit must be a list"
+            assert len(limit) == 2,  (
+                "limit must be a list with 2 elements which denote "
+                "start number and end number")
         self.limit = limit or [0, 100]
+
+        if order_by:
+            assert isinstance(order_by, str), (
+                "order_by must be a string which denote the field to be sorted")
         self.order_by = order_by or ""
+
+        if order_param:
+            assert isinstance(order_param, str), (
+                "order_param must be a string which denote how the field "
+                "will be sorted")
+            assert order_param in [rp_order_param.asc, rp_order_param.desc]
         self.order_param = order_param or ""
 
     def as_dict(self):

@@ -108,11 +108,11 @@ class IKuai:  # noqa
             }
         )
 
-    def get_mac_groups(self):
+    def get_mac_groups(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.macgroup,
             action=rp_action.show,
-            param=QueryRPParam().as_dict()
+            param=QueryRPParam(**query_kwargs).as_dict()
         )
         return result[JSON_RESPONSE_DATA]
 
@@ -145,7 +145,7 @@ class IKuai:  # noqa
 
     def _get_acl_l7_param(
             self, comment, src_addrs: list, action,
-            dst_addrs: list | None=None,
+            dst_addrs: list | None = None,
             prio=32, app_protos=None, enabled=True, time="00:00-23:59",
             week="1234567"):
         app_protos = app_protos or []
@@ -185,11 +185,11 @@ class IKuai:  # noqa
             param=param
         )
 
-    def get_acl_l7(self):
+    def get_acl_l7(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.acl_l7,
             action=rp_action.show,
-            param=QueryRPParam().as_dict()
+            param=QueryRPParam(**query_kwargs).as_dict()
         )
         return result[JSON_RESPONSE_DATA]
 
@@ -265,11 +265,11 @@ class IKuai:  # noqa
         }
         return param
 
-    def get_domain_blacklist(self):
+    def get_domain_blacklist(self, **query_kwargs):
         result = self.exec(
             func_name=rp_func_name.domain_blacklist,
             action=rp_action.show,
-            param=QueryRPParam().as_dict()
+            param=QueryRPParam(**query_kwargs).as_dict()
         )
         return result[JSON_RESPONSE_DATA]
 
