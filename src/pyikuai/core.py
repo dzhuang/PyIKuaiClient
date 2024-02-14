@@ -7,10 +7,54 @@ import requests
 
 from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         JSON_RESPONSE_ERRMSG_SUCCESS, JSON_RESPONSE_RESULT,
-                        QueryRPParam, acl_l7_param, acl_l7_param_action,
+                        acl_l7_param, acl_l7_param_action,
                         domain_blacklist_param, json_result_code,
-                        mac_group_param, rp_action, rp_func_name, rp_key)
+                        mac_group_param, rp_action, rp_func_name, rp_key,
+                        rp_order_param)
 from .exceptions import AuthenticationError, RequestError, RouterAPIError
+
+
+class QueryRPParam:
+    def __init__(
+            self, param_type: list | None = None,
+            limit=None, order_by=None, order_param=None):
+        """
+        :param param_type: list
+        :param limit: list of int
+        :param order_by: string
+        :param order_param: string
+        """
+
+        if param_type is not None:
+            assert isinstance(param_type, list), "param_type must be a list"
+        self.param_type = param_type or ["total", "data"]
+
+        if limit is not None:
+            assert isinstance(limit, list), "limit must be a list"
+            assert len(limit) == 2,  (
+                "limit must be a list with 2 elements which denote "
+                "start number and end number")
+        self.limit = limit or [0, 100]
+
+        if order_by:
+            assert isinstance(order_by, str), (
+                "order_by must be a string which denote the field to be sorted")
+        self.order_by = order_by or ""
+
+        if order_param:
+            assert isinstance(order_param, str), (
+                "order_param must be a string which denote how the field "
+                "will be sorted")
+            assert order_param in [rp_order_param.asc, rp_order_param.desc]
+        self.order_param = order_param or ""
+
+    def as_dict(self):
+        return {
+            "TYPE": ",".join(self.param_type),
+            "limit": ",".join(map(str, self.limit)),
+            "ORDER_BY": self.order_by,
+            "ORDER": self.order_param
+        }
 
 
 class IKuai:  # noqa
