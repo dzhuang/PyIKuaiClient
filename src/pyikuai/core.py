@@ -10,8 +10,8 @@ from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         JSON_RESPONSE_ERRMSG_SUCCESS, JSON_RESPONSE_RESULT,
                         acl_l7_param, acl_l7_param_action, acl_mac_param,
                         domain_blacklist_param, json_result_code,
-                        mac_comment_param, mac_group_param, rp_action,
-                        rp_func_name, rp_key, rp_order_param)
+                        mac_comment_param, mac_group_param, mac_qos_param,
+                        rp_action, rp_func_name, rp_key, rp_order_param)
 from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
                          ValidationError)
 
@@ -598,6 +598,186 @@ class IKuaiClient:  # noqa
             action=rp_action.up,
             param={
                 acl_mac_param.id: acl_mac_id,
+            }
+        )
+
+    # }}}
+
+    # {{{ mac_qos CRUD
+    # 流控分流 之 MAC限速
+
+    def _get_mac_qos_param(
+            self,
+            mac_addrs,
+            upload,
+            download,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567",
+            qos_type=0,
+            ip_type="4",
+            is_editing=False,
+            mac_qos_id=None,
+            interface=None,
+    ):
+
+        if not isinstance(mac_addrs, list):
+            mac_addrs = [mac_addrs]
+
+        mac_addr = ",".join(mac_addrs)
+
+        interface = interface or []
+        if not isinstance(interface, list):
+            interface = [interface]
+        interface = ",".join(interface)
+
+        upload = float(upload)
+        download = float(download)
+
+        # qos_type: "0" for 独立限速, "1" for 共享限速
+        assert qos_type in [0, 1, "0", "1"]
+        qos_type = str(qos_type)
+
+        assert ip_type in ["4", "6", 4, 6]
+        ip_type = str(ip_type)
+
+        self.validate_time_range(time)
+
+        enabled = "yes" if enabled else "no"
+        comment = comment or ""
+        comment = comment.replace(" ", quote(" "))
+
+        param = {
+            mac_qos_param.mac_addr: mac_addr,
+            mac_qos_param.comment: comment,
+            mac_qos_param.enabled: enabled,
+            mac_qos_param.time: time,
+            mac_qos_param.week: week,
+            mac_qos_param.qos_type: qos_type,
+            mac_qos_param.ip_type: ip_type,
+            mac_qos_param.upload: upload,
+            mac_qos_param.download: download,
+            mac_qos_param.interface: interface,
+        }
+
+        # when edit, there's a attr=0 param
+        if is_editing:
+            assert mac_qos_id is not None, (
+                "mac_qos_param_id cannot be None when editing")
+
+            param[mac_qos_param.id] = mac_qos_id
+            param[mac_qos_param.attr] = 0
+
+        """
+        attr: 0
+        comment: "快速添加"
+        download: 10000
+        enabled: "yes"
+        id: 1
+        interface: "wan1"
+        ip_type: "4"
+        mac_addr: "45:a9:fd:43:97:2c,test2"
+        time: "00:00-23:59"
+        type: 1
+        upload: 10000
+        week: "1234567"
+        """
+
+        return param
+
+    def add_mac_qos(
+            self,
+            mac_addrs,
+            upload,
+            download,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567",
+            qos_type=0,
+            ip_type="4",
+            interface=None):
+
+        param = self._get_mac_qos_param(
+            mac_addrs=mac_addrs,
+            upload=upload,
+            download=download,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week,
+            qos_type=qos_type,
+            ip_type=ip_type,
+            is_editing=False,
+            interface=interface
+        )
+
+        return self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.add,
+            param=param
+        )
+
+    def edit_mac_qos(
+            self,
+            mac_qos_id,
+            mac_addrs,
+            upload,
+            download,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567",
+            qos_type=0,
+            ip_type="4",
+            interface=None):
+
+        param = self._get_mac_qos_param(
+            mac_addrs=mac_addrs,
+            upload=upload,
+            download=download,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week,
+            qos_type=qos_type,
+            ip_type=ip_type,
+            is_editing=True,
+            interface=interface,
+            mac_qos_id=mac_qos_id
+        )
+
+        return self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.edit,
+            param=param
+        )
+
+    def del_mac_qos(self, mac_qos_id):
+        return self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.delete,
+            param={
+                mac_qos_param.id: mac_qos_id,
+            }
+        )
+
+    def disable_mac_qos(self, mac_qos_id):
+        return self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.down,
+            param={
+                mac_qos_param.id: mac_qos_id,
+            }
+        )
+
+    def enable_mac_qos(self, mac_qos_id):
+        return self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.up,
+            param={
+                mac_qos_param.id: mac_qos_id,
             }
         )
 

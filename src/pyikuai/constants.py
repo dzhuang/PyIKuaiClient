@@ -30,6 +30,7 @@ class rp_func_name:  # noqa
 
     macgroup = "macgroup"
     mac_comment = "mac_comment"
+    mac_qos = "mac_qos"
 
     domain_blacklist = "domain_blacklist"
     monitor_lanip = "monitor_lanip"
@@ -93,3 +94,18 @@ class acl_mac_param:  # noqa
     mac = "mac"
     time = "time"
     week = "week"
+
+
+class mac_qos_param:  # noqa
+    attr = "attr"
+    id = "id"
+    comment = "comment"
+    enabled = "enabled"
+    download = "download"
+    upload = "upload"
+    interface = "interface"
+    mac_addr = "mac_addr"
+    time = "time"
+    week = "week"
+    qos_type = "type"
+    ip_type = "ip_type"
