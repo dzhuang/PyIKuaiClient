@@ -8,10 +8,10 @@ import requests
 
 from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         JSON_RESPONSE_ERRMSG_SUCCESS, JSON_RESPONSE_RESULT,
-                        acl_l7_param, acl_l7_param_action, mac_comment_param,
-                        domain_blacklist_param, json_result_code, acl_mac_param,
-                        mac_group_param, rp_action, rp_func_name, rp_key,
-                        rp_order_param)
+                        acl_l7_param, acl_l7_param_action, acl_mac_param,
+                        domain_blacklist_param, json_result_code,
+                        mac_comment_param, mac_group_param, rp_action,
+                        rp_func_name, rp_key, rp_order_param)
 from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
                          ValidationError)
 
