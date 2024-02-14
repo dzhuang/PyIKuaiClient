@@ -150,6 +150,18 @@ class IKuaiClient:  # noqa
             f"Request failed with response status code: {response.status_code}")
 
     @staticmethod
+    def validate_weekday(weekdays_str):
+        input_chars_set = set(weekdays_str)
+        invalid_chars = input_chars_set - set("1234567")
+
+        if invalid_chars:
+            raise ValueError(
+                f"weekdays str contains invalid characters: {invalid_chars}")
+
+        sorted_unique_chars = sorted(input_chars_set)
+        return ''.join(sorted_unique_chars)
+
+    @staticmethod
     def validate_time_range(time_range_str):
         # 分割字符串以检查两个时间
         parts = time_range_str.split("-")
@@ -230,6 +242,7 @@ class IKuaiClient:  # noqa
             week="1234567"):
 
         self.validate_time_range(time)
+        self.validate_weekday(week)
 
         app_protos = app_protos or []
         enabled = "yes" if enabled else "no"
@@ -331,6 +344,7 @@ class IKuaiClient:  # noqa
             weekdays="1234567"):
 
         self.validate_time_range(time)
+        self.validate_weekday(weekdays)
 
         domain_groups = domain_groups or []
         enabled = "yes" if enabled else "no"
@@ -507,6 +521,7 @@ class IKuaiClient:  # noqa
             week="1234567"):
 
         self.validate_time_range(time)
+        self.validate_weekday(week)
 
         enabled = "yes" if enabled else "no"
         comment = comment or ""
@@ -606,6 +621,14 @@ class IKuaiClient:  # noqa
     # {{{ mac_qos CRUD
     # 流控分流 之 MAC限速
 
+    def list_mac_qos(self, **query_kwargs):
+        result = self.exec(
+            func_name=rp_func_name.mac_qos,
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
     def _get_mac_qos_param(
             self,
             mac_addrs,
@@ -643,6 +666,7 @@ class IKuaiClient:  # noqa
         ip_type = str(ip_type)
 
         self.validate_time_range(time)
+        self.validate_weekday(week)
 
         enabled = "yes" if enabled else "no"
         comment = comment or ""
