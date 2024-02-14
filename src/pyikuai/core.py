@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import json
+from datetime import datetime
 from urllib.parse import quote, urljoin
 
 import requests
@@ -11,7 +12,8 @@ from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         domain_blacklist_param, json_result_code,
                         mac_group_param, rp_action, rp_func_name, rp_key,
                         rp_order_param)
-from .exceptions import AuthenticationError, RequestError, RouterAPIError
+from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
+                         ValidationError)
 
 
 class QueryRPParam:
@@ -147,6 +149,30 @@ class IKuai:  # noqa
         raise RequestError(
             f"Request failed with response status code: {response.status_code}")
 
+    @staticmethod
+    def validate_time_range(time_range_str):
+        # 分割字符串以检查两个时间
+        parts = time_range_str.split("-")
+        if len(parts) != 2:
+            raise ValidationError(
+                "time format error: it must be of format 'HH:MM-HH:MM'")
+
+        # 验证时间格式
+        time_format = "%H:%M"
+        start_time_str, end_time_str = parts
+        try:
+            # 尝试将字符串转换为时间对象以验证格式和范围
+            start_time = datetime.strptime(start_time_str, time_format)  # noqa
+            end_time = datetime.strptime(end_time_str, time_format)  # noqa
+        except Exception as e:
+            # 如果转换失败，说明时间格式不正确
+            raise ValidationError(f"time format error: {type(e).__name__}: {str(e)}")
+
+        # 可选: 检查开始时间是否早于或等于结束时间
+        # if start_time > end_time:
+        #     return False
+        return
+
     # {{{ mac group CRUD
 
     def add_mac_group(self, group_name, addr_pools, comments=None):
@@ -202,6 +228,9 @@ class IKuai:  # noqa
             dst_addrs: list | None = None,
             prio=32, app_protos=None, enabled=True, time="00:00-23:59",
             week="1234567"):
+
+        self.validate_time_range(time)
+
         app_protos = app_protos or []
         enabled = "yes" if enabled else "no"
         comment = comment.replace(" ", quote(" "))
@@ -300,6 +329,8 @@ class IKuai:  # noqa
             domain_groups=None, time="00:00-23:59",
             comment=None,
             weekdays="1234567"):
+
+        self.validate_time_range(time)
 
         domain_groups = domain_groups or []
         enabled = "yes" if enabled else "no"
