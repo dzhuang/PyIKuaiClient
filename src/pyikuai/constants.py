@@ -39,6 +39,8 @@ class rp_func_name:  # noqa
     acl_l7 = "acl_l7"
     acl_mac = "acl_mac"
 
+    url_black = "url_black"
+
 
 class rp_order_param:  # noqa
     asc = "asc"
@@ -97,7 +99,7 @@ class acl_mac_param:  # noqa
 
 
 class mac_qos_param:  # noqa
-    attr = "attr"
+    attr = "attr"  # todo: what does this control?
     id = "id"
     comment = "comment"
     enabled = "enabled"
@@ -109,3 +111,14 @@ class mac_qos_param:  # noqa
     week = "week"
     qos_type = "type"
     ip_type = "ip_type"
+
+
+class url_black_param:  # noqa
+    id = "id"
+    comment = "comment"
+    domain = "domain"
+    enabled = "enabled"
+    ip_addr = "ip_addr"
+    mode = "mode"
+    time = "time"
+    week = "week"

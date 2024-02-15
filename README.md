@@ -131,3 +131,7 @@ The management of alias of devices, mapping mac addresses. The implemented metho
 ### mac_qos
 
 The interface for limiting download/upload speed of devices, mapping mac addresses. The implemented methods include: `add_mac_qos`, `list_mac_qos`, `edit_mac_qos`, `del_mac_qos`, `enable_mac_qos`, `disable_mac_qos`.
+
+### url_black
+
+Blacklisting or whitelisting url for accessing, mapping mac addresses. The implemented methods include: `add_url_black`, `list_url_black`, `edit_url_black`, `del_url_black`, `enable_url_black`, `disable_url_black`.
