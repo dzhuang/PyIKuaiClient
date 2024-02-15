@@ -11,7 +11,8 @@ from .constants import (JSON_RESPONSE_DATA, JSON_RESPONSE_ERRMSG,
                         acl_l7_param, acl_l7_param_action, acl_mac_param,
                         domain_blacklist_param, json_result_code,
                         mac_comment_param, mac_group_param, mac_qos_param,
-                        rp_action, rp_func_name, rp_key, rp_order_param)
+                        rp_action, rp_func_name, rp_key, rp_order_param,
+                        url_black_param)
 from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
                          ValidationError)
 
@@ -802,6 +803,141 @@ class IKuaiClient:  # noqa
             action=rp_action.up,
             param={
                 mac_qos_param.id: mac_qos_id,
+            }
+        )
+
+    # }}}
+
+    # {{{ url_black CRUD
+    # 行为管控 之 网址黑名单
+
+    def list_url_black(self, **query_kwargs):
+        result = self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.show,
+            param=QueryRPParam(**query_kwargs).as_dict()
+        )
+        return result[JSON_RESPONSE_DATA]
+
+    def _get_url_black_param(
+            self,
+            ip_addrs,
+            mode,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567",
+            is_editing=False,
+            url_black_id=None):
+
+        if not isinstance(ip_addrs, list):
+            ip_addrs = [ip_addrs]
+        ip_addr = ",".join(ip_addrs)
+
+        # mode: "0" for 独立限速, "1" for 共享限速
+        assert mode in [0, 1, "0", "1"]
+        mode = int(mode)
+
+        self.validate_time_range(time)
+        self.validate_weekday(week)
+
+        enabled = "yes" if enabled else "no"
+        comment = comment or ""
+        comment = comment.replace(" ", quote(" "))
+
+        param = {
+            url_black_param.ip_addr: ip_addr,
+            url_black_param.comment: comment,
+            url_black_param.enabled: enabled,
+            url_black_param.mode: mode,
+            url_black_param.time: time,
+            url_black_param.week: week,
+        }
+
+        # when edit, there's a attr=0 param
+        if is_editing:
+            assert url_black_id is not None, (
+                "mac_qos_param_id cannot be None when editing")
+
+            param[url_black_param.id] = url_black_id
+        return param
+
+    def add_url_black(
+            self,
+            ip_addrs,
+            mode,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567"):
+
+        param = self._get_url_black_param(
+            ip_addrs=ip_addrs,
+            mode=mode,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week,
+            is_editing=False,
+        )
+
+        return self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.add,
+            param=param
+        )
+
+    def edit_url_black(
+            self,
+            url_black_id,
+            ip_addrs,
+            mode,
+            enabled=True,
+            time="00:00-23:59",
+            comment=None,
+            week="1234567"):
+
+        param = self._get_url_black_param(
+            ip_addrs=ip_addrs,
+            mode=mode,
+            enabled=enabled,
+            time=time,
+            comment=comment,
+            week=week,
+            is_editing=True,
+            url_black_id=url_black_id
+        )
+
+        return self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.edit,
+            param=param
+        )
+
+    def del_url_black(self, url_black_id):
+        return self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.delete,
+            param={
+                url_black_param.id: url_black_id,
+            }
+        )
+
+    def disable_url_black(self, url_black_id):
+        return self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.down,
+            param={
+                url_black_param.id: url_black_id,
+            }
+        )
+
+    def enable_url_black(self, url_black_id):
+        return self.exec(
+            func_name=rp_func_name.url_black,
+            action=rp_action.up,
+            param={
+                url_black_param.id: url_black_id,
             }
         )
 
