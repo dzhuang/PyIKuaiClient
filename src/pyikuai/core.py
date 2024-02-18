@@ -19,7 +19,7 @@ from .exceptions import (AuthenticationError, RequestError, RouterAPIError,
 
 class QueryRPParam:
     def __init__(
-            self, param_type: list | None = None,
+            self, param_type=None,
             limit=None, order_by=None, order_param=None):
         """
         :param param_type: list
@@ -238,7 +238,7 @@ class IKuaiClient:  # noqa
 
     def _get_acl_l7_param(
             self, comment, src_addrs: list, action,
-            dst_addrs: list | None = None,
+            dst_addrs=None,
             prio=32, app_protos=None, enabled=True, time="00:00-23:59",
             week="1234567"):
 
@@ -339,7 +339,7 @@ class IKuaiClient:  # noqa
 
     def _get_domain_blacklist_param(
             self, enabled=True,
-            ipaddrs: list | None = None,
+            ipaddrs=None,
             domain_groups=None, time="00:00-23:59",
             comment=None,
             weekdays="1234567"):
@@ -375,7 +375,7 @@ class IKuaiClient:  # noqa
 
     def add_domain_blacklist(
             self, enabled=True,
-            ipaddrs: list | None = None,
+            ipaddrs=None,
             domain_groups=None, time="00:00-23:59",
             comment=None,
             weekdays="1234567"):
@@ -396,7 +396,7 @@ class IKuaiClient:  # noqa
 
     def edit_domain_blacklist(
             self, domain_blacklist_id, enabled=True,
-            ipaddrs: list | None = None,
+            ipaddrs=None,
             domain_groups=None, time="00:00-23:59",
             comment=None,
             weekdays="1234567"):
